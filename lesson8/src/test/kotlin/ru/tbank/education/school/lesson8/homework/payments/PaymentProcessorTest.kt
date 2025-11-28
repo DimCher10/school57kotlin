@@ -93,7 +93,7 @@ class PaymentProcessorTest {
     }
 
     @Test
-    @DisplayName("Номер карты содержит нечисленные значения")
+    @DisplayName("Номер карты содержит не численные значения")
     fun cardNumberWithNonDigits() {
         assertThrows(IllegalArgumentException::class.java) {
             processor.processPayment(
@@ -428,16 +428,6 @@ class PaymentProcessorTest {
         assertEquals(0, discount)
     }
 
-
-
-    @Test
-    @DisplayName("Обработка пустого списка платежей")
-    fun bulkProcessEmptyList() {
-        val paymentList = emptyList<PaymentData>()
-        val result = processor.bulkProcess(paymentList)
-        assertEquals(0, result.size)
-    }
-
     @Test
     @DisplayName("Обработка успешных платежей")
     fun bulkProcessSuccessfulPayments() {
@@ -451,6 +441,16 @@ class PaymentProcessorTest {
             assertTrue(paymentResult.status == "SUCCESS" || paymentResult.status == "FAILED")
         }
     }
+
+    @Test
+    @DisplayName("Обработка пустого списка платежей")
+    fun bulkProcessEmptyList() {
+        val paymentList = emptyList<PaymentData>()
+        val result = processor.bulkProcess(paymentList)
+        assertEquals(0, result.size)
+    }
+
+
 
     @Test
     @DisplayName("Пакетная обработка с невалидными данными")

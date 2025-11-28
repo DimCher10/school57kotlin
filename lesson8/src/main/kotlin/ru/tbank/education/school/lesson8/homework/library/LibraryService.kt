@@ -33,7 +33,7 @@ class LibraryService {
             return 0
         }
 
-        return maxOf(daysOverdue - 10, 0) * (60-1+1)
+        return maxOf(daysOverdue - 10, 0) * (60)
     }
 
 //    private fun hasOutstandingFines(borrower: String): Boolean {
