@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -349,7 +348,7 @@ class PaymentProcessorTest {
         )
 
         assertEquals("FAILED", result.status)
-        assertTrue(result.message?.contains("limit", ignoreCase = true) == true)
+        assertTrue(result.message.contains("limit", ignoreCase = true))
     }
 
     @Test
@@ -365,7 +364,7 @@ class PaymentProcessorTest {
         )
 
         assertEquals("FAILED", result.status)
-        assertTrue(result.message?.contains("Gateway", ignoreCase = true) == true || result.message.isNotBlank())
+        assertTrue(result.message.contains("Gateway", ignoreCase = true) || result.message.isNotBlank())
     }
 
     @Test
@@ -457,10 +456,10 @@ class PaymentProcessorTest {
     @DisplayName("Пакетная обработка с невалидными данными")
     fun bulkProcessWithInvalidData() {
         val payments = listOf(
-            PaymentData(1000, "4111111111111111", 12, 2025, "USD", "customer1"), // успех
-            PaymentData(-100, "4111111111111111", 12, 2025, "USD", "customer2"), // невалидная сумма
-            PaymentData(1000, "4111111111111111", 12, 2025, "", "customer3"), // пустая валюта
-            PaymentData(1000, "4111111111111111", 13, 2025, "USD", "customer4") // невалидный месяц
+            PaymentData(1000, "4111111111111111", 12, 2025, "USD", "customer1"),
+            PaymentData(-100, "4111111111111111", 12, 2025, "USD", "customer2"),
+            PaymentData(1000, "4111111111111111", 12, 2025, "", "customer3"),
+            PaymentData(1000, "4111111111111111", 13, 2025, "USD", "customer4")
         )
 
         val results = processor.bulkProcess(payments)
@@ -468,20 +467,20 @@ class PaymentProcessorTest {
         assertEquals(4, results.size)
         assertEquals("SUCCESS", results[0].status)
         assertEquals("REJECTED", results[1].status)
-        assertTrue(results[1].message?.contains("Amount must be positive") == true)
+        assertTrue(results[1].message.contains("Amount must be positive"))
         assertEquals("REJECTED", results[2].status)
-        assertTrue(results[2].message?.contains("Currency cannot be empty") == true)
+        assertTrue(results[2].message.contains("Currency cannot be empty"))
         assertEquals("REJECTED", results[3].status)
-        assertTrue(results[3].message?.contains("Invalid expiry date") == true)
+        assertTrue(results[3].message.contains("Invalid expiry date"))
     }
 
     @Test
     @DisplayName("Пакетная обработка с подозрительными картами")
     fun bulkProcessWithSuspiciousCards() {
         val payments = listOf(
-            PaymentData(1000, "4444111122223333", 12, 2025, "USD", "customer1"), // подозрительная
-            PaymentData(1000, "5555111122223333", 12, 2025, "USD", "customer2"), // подозрительная
-            PaymentData(1000, "4111111111111111", 12, 2025, "USD", "customer3") // нормальная
+            PaymentData(1000, "4444111122223333", 12, 2025, "USD", "customer1"),
+            PaymentData(1000, "5555111122223333", 12, 2025, "USD", "customer2"),
+            PaymentData(1000, "4111111111111111", 12, 2025, "USD", "customer3")
         )
 
         val results = processor.bulkProcess(payments)
@@ -498,10 +497,10 @@ class PaymentProcessorTest {
     @DisplayName("Пакетная обработка с различными статусами")
     fun bulkProcessMixedStatuses() {
         val payments = listOf(
-            PaymentData(1000, "4111111111111111", 12, 2025, "USD", "customer1"), // успех
-            PaymentData(50, "5500000012345678", 12, 2025, "USD", "customer2"), // недостаточно средств
-            PaymentData(1000, "4444888812345678", 12, 2025, "USD", "customer3"), // подозрительная
-            PaymentData(100001, "4111111111111111", 12, 2025, "USD", "customer4") // превышение лимита
+            PaymentData(1000, "4111111111111111", 12, 2025, "USD", "customer1"),
+            PaymentData(50, "5500000012345678", 12, 2025, "USD", "customer2"),
+            PaymentData(1000, "4444888812345678", 12, 2025, "USD", "customer3"),
+            PaymentData(100001, "4111111111111111", 12, 2025, "USD", "customer4")
         )
 
         val results = processor.bulkProcess(payments)
@@ -513,7 +512,7 @@ class PaymentProcessorTest {
         assertEquals("REJECTED", results[2].status)
         assertEquals("Payment blocked due to suspected fraud", results[2].message)
         assertEquals("FAILED", results[3].status)
-        assertTrue(results[3].message?.contains("limit", ignoreCase = true) == true)
+        assertTrue(results[3].message.contains("limit", ignoreCase = true))
     }
 
 
