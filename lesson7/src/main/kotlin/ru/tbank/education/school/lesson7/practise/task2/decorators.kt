@@ -1,5 +1,7 @@
 package ru.tbank.education.school.lesson7.practise.task2
 
+import java.time.LocalDateTime
+
 /**
  * Реализуй декоратор limitRate(intervalMs: Long, f: (A) -> R): (A) -> R?
  *
@@ -20,7 +22,12 @@ package ru.tbank.education.school.lesson7.practise.task2
  * printMessage("C") // выполняется
  */
 fun <A, R> limitRate(intervalMs: Long, f: (A) -> R): (A) -> R? {
-    TODO()
+    var lastUse: Long? = null;
+    return { arg: A ->
+        val now = System.currentTimeMillis()
+        if (lastUse == null || now >= intervalMs + lastUse!!) {lastUse = now; f(arg)
+        } else {null}
+    }
 }
 
 
@@ -40,7 +47,13 @@ fun <A, R> limitRate(intervalMs: Long, f: (A) -> R): (A) -> R? {
  * println(safeDivide(0))  // Failure(java.lang.ArithmeticException: / by zero)
  */
 fun <A, R> safeCall(f: (A) -> R): (A) -> Result<R> {
-    TODO()
+    return { argument: A ->
+        try {
+            Result.success(f(argument))
+        } catch (e: Throwable) {
+            Result.failure(e)
+        }
+    }
 }
 
 /**
@@ -62,7 +75,12 @@ fun <A, R> safeCall(f: (A) -> R): (A) -> Result<R> {
  * 15
  */
 fun <A, R> logCalls(name: String, f: (A) -> R): (A) -> R {
-    TODO()
+    return {  argument : A ->
+        println("[$name] вызвана с аргументом: $argument")
+        val result = f(argument)
+        println("[$name] вернула результат: $result")
+        result
+    }
 }
 
 
@@ -81,9 +99,28 @@ fun <A, R> logCalls(name: String, f: (A) -> R): (A) -> R {
  * println(safe()) // ok
  */
 fun <T> retry(times: Int, f: () -> T): () -> T {
-    TODO()
-}
+    return {
+        var result: T? = null
+        var success = false
+        var lastException: Throwable? = null
 
+        for (attempt in 1..times) {
+            try {
+                result = f()
+                success = true
+                break
+            } catch (e: Throwable) {
+                lastException = e
+            }
+        }
+
+        if (success) {
+            result!!
+        } else {
+            throw lastException ?: RuntimeException("Все попытки исчерпаны")
+        }
+    }
+}
 /**
  * Таймер-декоратор.
  *
@@ -101,9 +138,17 @@ fun <T> retry(times: Int, f: () -> T): () -> T {
  * println(slowFn(10))
  */
 fun <A, R> timed(name: String, f: (A) -> R): (A) -> R {
-    TODO()
+    return { argument: A ->
+        val startTime = System.currentTimeMillis()
+        try {
+            f(argument)
+        } finally {
+            val endTime = System.currentTimeMillis()
+            val duration = endTime - startTime
+            println("[$name] выполнено за $duration мс")
+        }
+    }
 }
-
 /**
  * Мемоизация с ограниченным размером кэша.
  *
@@ -124,5 +169,12 @@ fun <A, R> timed(name: String, f: (A) -> R): (A) -> R {
  *
  */
 fun <A, R> memoizeWith(capacity: Int, f: (A) -> R): (A) -> R {
-    TODO()
+    val cache = object : LinkedHashMap<A, R>(capacity, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<A, R>?): Boolean {
+            return size > capacity
+        }
+    }
+    return { argument: A ->
+        cache.getOrPut(argument) { f(argument) }
+    }
 }
