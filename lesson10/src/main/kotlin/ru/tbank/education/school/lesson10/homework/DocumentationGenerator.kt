@@ -75,7 +75,7 @@ object DocumentationGenerator {
                     for (parameter in visibleParameters) {
                         val parameterAnnotation = parameter.findAnnotation<DocParam>()
                         val description = parameterAnnotation?.description ?: "Нет описания"
-                        documentationBuilder.append("    - ${parameter.name}: $description\n")
+                        documentationBuilder.append("   - ${parameter.name}: $description\n")
                     }
                 }
 
