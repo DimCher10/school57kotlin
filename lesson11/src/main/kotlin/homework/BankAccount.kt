@@ -1,5 +1,8 @@
 package homework
 
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+
 
 /**
  *
@@ -16,12 +19,16 @@ package homework
  * 3. Убедитесь, что все тесты проходят
  */
 class BankAccount(val id: String, var balance: Int) {
-
+    val mutex = Mutex()
     fun transfer(to: BankAccount, amount: Int) {
-        synchronized(this) {
-            Thread.sleep(10)
-            
-            synchronized(to) {
+        val (first, second) = if (this.id > to.id) {
+            Pair(this, to)
+        }
+        else {
+            Pair(to, this)
+        }
+        synchronized(first) {
+            synchronized(second) {
                 if (balance >= amount) {
                     balance -= amount
                     to.balance += amount
