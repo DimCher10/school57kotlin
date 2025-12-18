@@ -1,6 +1,7 @@
 package homework
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.internal.synchronized
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.atomic.AtomicInteger
@@ -15,14 +16,16 @@ import java.util.concurrent.atomic.AtomicInteger
 class UnsafeCounter {
 
     private var value = 0
+    val mutex = Mutex()
 
     suspend fun increment() {
-        delay(1)
-        value++
+        mutex.withLock {
+            value++
+        }
+
     }
 
     fun getValue(): Int = value
-
     suspend fun runConcurrentIncrements(
         coroutineCount: Int = 10,
         incrementsPerCoroutine: Int = 1000

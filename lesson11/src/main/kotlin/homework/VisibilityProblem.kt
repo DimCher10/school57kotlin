@@ -6,24 +6,33 @@
  * что изменения переменной в одном потоке могут быть не видны в другом потоке.
  *
  */
+import kotlinx.coroutines.internal.synchronized
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import java.util.concurrent.locks.ReentrantLock
+import java.util.concurrent.locks.ReentrantReadWriteLock
 class VisibilityProblem {
-
     private var running = true
-
     /**
      * Создает и возвращает поток writer.
      * Поток выполняет некоторую работу, затем меняет флаг running на false.
      * Изменение может быть не видно потоку reader из-за проблем с видимостью.
      */
+    val locker =  ReentrantLock()
     fun startWriter(): Thread {
+
         return Thread {
             // Имитация работы
             repeat(100) {
                 Thread.sleep(10)
                 Thread.yield()
             }
-
-            running = false
+            locker.lock()
+            try {
+                running = false
+            } finally {
+                locker.unlock()
+            }
             println("Writer: установил running = false (изменение может быть не видно)")
         }
     }
@@ -36,12 +45,19 @@ class VisibilityProblem {
     fun startReader(): Thread {
         return Thread {
             println("Reader: начал работу (ждет running = false)")
-
-            while (running) {
-
+            while (true) {
+                locker.lock()
+                try {
+                    if (!running) {
+                        println("Reader: завершил работу (увидел running = false под lock)")
+                        return@Thread
+                    }
+                }
+                finally {
+                    locker.unlock()
+                }
+                Thread.yield()
             }
-
-            println("Reader: завершил работу (увидел running = false)")
         }
     }
 }
